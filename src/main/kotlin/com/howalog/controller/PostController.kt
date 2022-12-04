@@ -1,10 +1,9 @@
 package com.howalog.controller
 
 import com.howalog.request.PostCreateDto
+import com.howalog.response.PostResponse
 import com.howalog.service.PostService
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 
 @RestController
@@ -15,5 +14,10 @@ class PostController(
     @PostMapping("/posts")
     fun write(@RequestBody @Valid postCreateDto: PostCreateDto) {
         postService.write(postCreateDto)
+    }
+
+    @GetMapping("/posts/{postId}")
+    fun get(@PathVariable postId: Long): PostResponse {
+        return postService.get(postId)
     }
 }
