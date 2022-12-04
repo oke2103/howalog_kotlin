@@ -1,6 +1,7 @@
 package com.howalog.controller
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.howalog.domain.Post
 import com.howalog.repository.PostRepository
 import com.howalog.request.PostCreateDto
 import org.assertj.core.api.Assertions.assertThat
@@ -12,7 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -71,6 +72,31 @@ internal class PostControllerTest @Autowired constructor(
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
             .andExpect(jsonPath("$.validation.title").value("게시글 제목은 필수입니다."))
             .andExpect(jsonPath("$.validation.content").value("게시글 내용은 필수입니다."))
+            .andDo(print())
+    }
+
+    @Test
+    @DisplayName("게시글 조회 - 성공")
+    fun get() {
+        // given
+        val request = postRepository.save(Post(title = "제목", content = "내용"))
+
+        // expected
+        mockMvc.perform(get("/posts/{postId}", request.id))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.title").value("제목"))
+            .andExpect(jsonPath("$.content").value("내용"))
+            .andDo(print())
+    }
+
+    @Test
+    @DisplayName("게시글 조회 - 실패 :: 게시글 없음")
+    fun getFailPostNotFound() {
+        // expected
+        mockMvc.perform(get("/posts/{postId}", 0L))
+            .andExpect(status().isBadRequest)
+            .andExpect(jsonPath("$.code").value(400))
+            .andExpect(jsonPath("$.message").value("게시글이 존재하지 않습니다."))
             .andDo(print())
     }
 
